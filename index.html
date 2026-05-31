@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>なんじ・なんじはん とけい</title>
+<style>
+  :root {
+    --bg: #f7f7f7;
+    --panel: #ffffff;
+    --shadow: 0 8px 20px rgba(0,0,0,.10);
+    --radius: 16px;
+    --dark: #111;
+    --soft: #ececec;
+    --softer: #f1f1f1;
+    --muted: #666;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 12px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 12px 18px;
+  }
+
+  .title {
+    font-weight: 950;
+    font-size: 22px;
+    margin: 0 0 12px;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* 操作行（時計の上） */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 14px;
+  }
+
+  .field {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--softer);
+    border-radius: 14px;
+    padding: 8px 12px;
+  }
+
+  .field label {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--muted);
+  }
+
+  .selectBtn {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    border-radius: 12px;
+    background: var(--dark);
+    color: #fff;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 950;
+    padding: 10px 36px 10px 16px;
+    cursor: pointer;
+    background-image:
+      linear-gradient(45deg, transparent 50%, #fff 50%),
+      linear-gradient(135deg, #fff 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) calc(50% - 3px),
+      calc(100% - 12px) calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+  }
+
+  .resetBtn {
+    border: 0;
+    border-radius: 12px;
+    background: var(--soft);
+    color: var(--dark);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 950;
+    padding: 12px 18px;
+    cursor: pointer;
+  }
+  .resetBtn:hover { background: #e0e0e0; }
+
+  /* 時計 */
+  .clock-wrap {
+    position: relative;
+    width: min(60vh, 92vw);
+    aspect-ratio: 1 / 1;
+    margin: 8px auto 12px;
+  }
+  .clock-wrap img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    user-select: none; -webkit-user-drag: none;
+  }
+  .hand {
+    transform-origin: 50% 50%;
+    transition: transform 1.2s cubic-bezier(.5,.0,.2,1);
+  }
+
+  /* 読み上げ */
+  .readout {
+    text-align: center;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 950;
+    letter-spacing: 4px;
+    margin: 8px 0 0;
+  }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 6px; }
+    .panel { padding: 10px 8px 14px; }
+    .title { font-size: 20px; }
+    .selectBtn { font-size: 16px; padding: 9px 32px 9px 14px; }
+    .resetBtn { font-size: 14px; padding: 10px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+
+    <h1 class="title">なんじ・なんじはん とけい</h1>
+
+    <div class="controls">
+      <div class="field">
+        <label for="sel-hour">なんじ</label>
+        <select id="sel-hour" class="selectBtn">
+          <option value="1">1じ</option>
+          <option value="2">2じ</option>
+          <option value="3">3じ</option>
+          <option value="4">4じ</option>
+          <option value="5">5じ</option>
+          <option value="6">6じ</option>
+          <option value="7">7じ</option>
+          <option value="8">8じ</option>
+          <option value="9">9じ</option>
+          <option value="10">10じ</option>
+          <option value="11">11じ</option>
+          <option value="12" selected>12じ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sel-min">ふん</label>
+        <select id="sel-min" class="selectBtn">
+          <option value="0" selected>ちょうど</option>
+          <option value="30">はん (30ぷん)</option>
+        </select>
+      </div>
+      <button id="btn-reset" class="resetBtn">リセット</button>
+    </div>
+
+    <div class="clock-wrap">
+      <img src="clock-face.png" alt="文字盤">
+      <img id="hand-short" class="hand" src="clock-hand-short.png" alt="短針">
+      <img id="hand-long"  class="hand" src="clock-hand-long.png"  alt="長針">
+    </div>
+
+    <p class="readout" id="readout">12 じ ちょうど</p>
+
+  </div>
+</div>
+
+<script>
+  const handShort = document.getElementById('hand-short');
+  const handLong  = document.getElementById('hand-long');
+  const selHour   = document.getElementById('sel-hour');
+  const selMin    = document.getElementById('sel-min');
+  const readout   = document.getElementById('readout');
+  const btnReset  = document.getElementById('btn-reset');
+
+  let curShortDeg = 0;
+  let curLongDeg  = 0;
+
+  function setTime(hour, minute) {
+    let targetLong  = minute * 6;
+    let targetShort = (hour % 12) * 30 + minute * 0.5;
+
+    // 常に時計回り (前回より小さい角度なら一周分加算)
+    while (targetLong  < curLongDeg  - 0.001) targetLong  += 360;
+    while (targetShort < curShortDeg - 0.001) targetShort += 360;
+
+    curLongDeg  = targetLong;
+    curShortDeg = targetShort;
+
+    handLong .style.transform = `rotate(${curLongDeg}deg)`;
+    handShort.style.transform = `rotate(${curShortDeg}deg)`;
+
+    readout.textContent = minute === 0
+      ? `${hour} じ ちょうど`
+      : `${hour} じ はん`;
+  }
+
+  function apply() {
+    const h = parseInt(selHour.value, 10);
+    const m = parseInt(selMin.value, 10);
+    setTime(h, m);
+  }
+
+  selHour.addEventListener('change', apply);
+  selMin .addEventListener('change', apply);
+
+  btnReset.addEventListener('click', () => {
+    handLong .style.transition = 'none';
+    handShort.style.transition = 'none';
+    curLongDeg = 0; curShortDeg = 0;
+    handLong .style.transform = 'rotate(0deg)';
+    handShort.style.transform = 'rotate(0deg)';
+    selHour.value = '12';
+    selMin.value = '0';
+    readout.textContent = '12 じ ちょうど';
+    requestAnimationFrame(() => {
+      handLong .style.transition = '';
+      handShort.style.transition = '';
+    });
+  });
+
+  // 初期表示
+  setTime(12, 0);
+</script>
+</body>
+</html>
